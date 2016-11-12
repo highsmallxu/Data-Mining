@@ -1,9 +1,14 @@
-import java.io.File;
+import java.io.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.SparkConf;
+import org.apache.spark.util.SystemClock;
+import scala.reflect.internal.Trees;
 
 /**
  * Created by gaoxiaoxu on 10/11/16.
@@ -11,19 +16,53 @@ import org.apache.spark.SparkConf;
 
 public class Evaluation {
 
+
+
     public List<String> AllDocuments = new ArrayList<String>();
-    public static void main(String args[]) {
+    public static void main(String args[]) throws IOException{
+
         Evaluation evaluation = new Evaluation();
 
         //Get dataset path
-        String DatasetPath = evaluation.getDatasetPath("mini_newsgroups");
+        String DatasetPath = evaluation.GetDatasetPath("mini_newsgroups");
         //Get all documents path
-        List AllDocuments = evaluation.AllDocumentsPath(DatasetPath);
+        List<String> AllDocuments = evaluation.AllDocumentsPath(DatasetPath);
 
+        //Tokenization
+        List<String> NewDocument = evaluation.Tokenization(AllDocuments.get(0));
+
+        //Build universe HashMap
+        Set<String> UniverseHashMap = new HashSet<String>();
+         
+
+        //k-shinglings
+        Shingling k_shingling = new Shingling();
+        String file = AllDocuments.get(0);
+        k_shingling.Shingling(file,10);
 
     }
 
-    public String getDatasetPath(String dataset){
+    public List Tokenization(String documentpath) throws FileNotFoundException, IOException{
+        List NewDocument = new ArrayList();
+        BufferedReader br = new BufferedReader(new FileReader(documentpath));
+        while(true){
+            String line = br.readLine();
+            if (line==null){
+                break;
+            }
+            String newline = line.replaceAll("\\W+"," ");
+            if(newline.length()==0){
+                continue;
+            }
+            else{
+                NewDocument.add(newline);
+            }
+        }
+
+        return NewDocument;
+    }
+
+    public String GetDatasetPath(String dataset){
         ClassLoader classLoader = getClass().getClassLoader();
         String path = classLoader.getResource(dataset).getPath();
         return path;
