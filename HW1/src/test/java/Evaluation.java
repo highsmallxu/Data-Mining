@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.SparkConf;
@@ -28,17 +29,24 @@ public class Evaluation {
         //Get all documents path
         List<String> AllDocuments = evaluation.AllDocumentsPath(DatasetPath);
 
-        //Tokenization
+        //Tokenization, remove punctuation
         List<String> NewDocument = evaluation.Tokenization(AllDocuments.get(0));
-
-        //Build universe HashMap
-        Set<String> UniverseHashMap = new HashSet<String>();
-         
+        String NewDocumentString = StringUtils.join(NewDocument, " ");
 
         //k-shinglings
         Shingling k_shingling = new Shingling();
-        String file = AllDocuments.get(0);
-        k_shingling.Shingling(file,10);
+        k_shingling.Shingling(NewDocumentString,10);
+
+
+        //Build universe HashMap
+        Set<String> UniverseHashMap = new HashSet<String>();
+
+        Set<String> seta = new HashSet<String>();
+        Set<String> setb = new HashSet<String>();
+
+
+
+
 
     }
 
@@ -55,6 +63,7 @@ public class Evaluation {
                 continue;
             }
             else{
+                List temp = new ArrayList();
                 NewDocument.add(newline);
             }
         }

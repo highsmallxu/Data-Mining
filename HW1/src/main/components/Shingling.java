@@ -1,21 +1,43 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.zip.CRC32;
-import java.util.HashMap;
+import org.apache.commons.lang3.StringUtils;
+
+import java.util.*;
+
 
 /**
  * Created by gaoxiaoxu on 10/11/16.
  */
 public class Shingling {
 
-    public void Shingling(String InputDocument, Integer k_shingles) throws FileNotFoundException, IOException{
-        BufferedReader br = new BufferedReader(new FileReader(InputDocument));
-        StringBuilder sb = new StringBuilder();
-        String line = br.readLine();
+    public void Shingling(String InputDocument, Integer k_shingles){
+        List<String> Tokens = new ArrayList();
+        List sets = new ArrayList();
+        StringTokenizer st = new StringTokenizer(InputDocument);
+        while (st.hasMoreTokens()){
+            Tokens.add(st.nextToken());
+        }
+
+        for(int i=0;i<Tokens.size();i++){
+            List<String> set = new ArrayList();
+            String currentToken = Tokens.get(i);
+            set.add(currentToken);
+            for(int j=1;j<k_shingles;j++){
+                if(i+j>=Tokens.size()){
+                    break;
+                }
+                else{
+                    set.add(Tokens.get(i+j));
+                }
+            }
+            if(set.size()==k_shingles){
+                String SetString = StringUtils.join(set," ");
+                sets.add(SetString);
+            }
+            else{
+                break;
+            }
+
+        }
+
 
         Set<String> set = new HashSet<String>();
         set.add("ddd");
