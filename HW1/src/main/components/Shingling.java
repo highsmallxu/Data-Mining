@@ -1,6 +1,6 @@
-import org.apache.commons.lang3.StringUtils;
-
+import java.io.UnsupportedEncodingException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 
 /**
@@ -8,51 +8,18 @@ import java.util.*;
  */
 public class Shingling {
 
-    public void Shingling(String InputDocument, Integer k_shingles){
-        List<String> Tokens = new ArrayList();
-        List sets = new ArrayList();
-        StringTokenizer st = new StringTokenizer(InputDocument);
-        while (st.hasMoreTokens()){
-            Tokens.add(st.nextToken());
+    public List Shingling(String InputDocument, Integer k_shingles) throws UnsupportedEncodingException{
+        Set<Integer> sets = new HashSet<Integer>();
+        Set<String> tmp = new HashSet<String>();
+        for(int i=0;i<InputDocument.length()-k_shingles+1;i++){
+            String single = InputDocument.substring(i,i+k_shingles);
+            Integer singleHashcode = single.hashCode();
+            sets.add(singleHashcode);
+            tmp.add(single);
         }
+        List<Integer> setsList = new ArrayList<Integer>(sets);
+        List<String> tmps = new ArrayList<String>(tmp);
+        return setsList;
 
-        for(int i=0;i<Tokens.size();i++){
-            List<String> set = new ArrayList();
-            String currentToken = Tokens.get(i);
-            set.add(currentToken);
-            for(int j=1;j<k_shingles;j++){
-                if(i+j>=Tokens.size()){
-                    break;
-                }
-                else{
-                    set.add(Tokens.get(i+j));
-                }
-            }
-            if(set.size()==k_shingles){
-                String SetString = StringUtils.join(set," ");
-                sets.add(SetString);
-            }
-            else{
-                break;
-            }
-
-        }
-
-
-        Set<String> set = new HashSet<String>();
-        set.add("ddd");
-        set.add("d");
-        set.add("ddd");
-
-
-//        String a = "Hello";
-//        String b = "world";
-//        String c = "Hello";
-//        CRC32 crc = new CRC32();
-//        CRC32 crc2 = new CRC32();
-//        CRC32 crc3 = new CRC32();
-//        crc.update(a.getBytes());
-//        crc2.update(b.getBytes());
-//        crc3.update(c.getBytes());
     }
 }

@@ -1,8 +1,5 @@
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -20,37 +17,97 @@ public class Evaluation {
 
 
     public List<String> AllDocuments = new ArrayList<String>();
+
     public static void main(String args[]) throws IOException{
 
+
         Evaluation evaluation = new Evaluation();
+        Shingling k_shingling = new Shingling();
+        Integer k_shingle = 10;
+        Integer numHash = 100;
+
 
         //Get dataset path
         String DatasetPath = evaluation.GetDatasetPath("mini_newsgroups");
         //Get all documents path
         List<String> AllDocuments = evaluation.AllDocumentsPath(DatasetPath);
+        //Initial document
+        String InitialDocumentPath = AllDocuments.get(0);
+        String InitialDocument = evaluation.RemoveSpaceAndJoint(InitialDocumentPath);
+        List<Integer> InitialDocumentShingle = k_shingling.Shingling(InitialDocument,k_shingle);
 
-        //Tokenization, remove punctuation
-        List<String> NewDocument = evaluation.Tokenization(AllDocuments.get(0));
-        String NewDocumentString = StringUtils.join(NewDocument, " ");
+        //Build Matrix
+        Map<Integer, boolean[]> InitialInputMatrix = new HashMap<Integer,boolean[]>();
+        for(int i=0;i<InitialDocumentShingle.size();i++){
+            InitialInputMatrix.put(InitialDocumentShingle.get(i),new boolean[]{true,false});
+        }
+        //Compated Documents
+        Map<Integer, boolean[]> ComparedInputMatrix;
+        Integer intersection;
+        Integer NumberofShingles;
+        Random r = new Random(100);
+        for (int i=0;i<AllDocuments.size();i++) {
+            ComparedInputMatrix = InitialInputMatrix;
+            intersection = 0;
+            String ComparedDocumentPath = AllDocuments.get(i);
+            String ComparedDocument = evaluation.RemoveSpaceAndJoint(ComparedDocumentPath);
+            List<Integer> ComparedDocumentShingle = k_shingling.Shingling(ComparedDocument, k_shingle);
+            for (int j = 0; j < ComparedDocumentShingle.size(); j++) {
+                if (ComparedInputMatrix.containsKey(ComparedDocumentShingle.get(j))) {
+                    ComparedInputMatrix.put(ComparedDocumentShingle.get(j), new boolean[]{true, true});
+                    intersection += 1;
+                } else if (!ComparedInputMatrix.containsKey(ComparedDocumentShingle.get(j))) {
+                    ComparedInputMatrix.put(ComparedDocumentShingle.get(j), new boolean[]{false, true});
+                }
+            }
+            System.out.print(intersection+"\n");
+            NumberofShingles = ComparedInputMatrix.size();
 
-        //k-shinglings
-        Shingling k_shingling = new Shingling();
-        k_shingling.Shingling(NewDocumentString,10);
+            List<Integer> coeffA = evaluation.pickRandoCoeffs(numHash);
+            List<Integer> coeffB = evaluation.pickRandoCoeffs(numHash);
 
+            Integer maxShingleID = (int)Math.pow(2,25) -1;
+            Integer nextPrime = maxShingleID + 16;
+            List<Integer> signature = new ArrayList<Integer>();
+            for (int z=0;z<numHash;z++){
+                Integer minHash = nextPrime + 1;
+                for (int m=0;m<ComparedDocumentShingle.size();m++){
+                    Integer hashCode = (coeffA.get(z)*ComparedDocumentShingle.get(m) + coeffB.get(z)) % nextPrime;
+                    if(hashCode<minHash){
+                        minHash = hashCode;
+                    }
+                }
+                signature.add(minHash);
+            }
 
-        //Build universe HashMap
-        Set<String> UniverseHashMap = new HashSet<String>();
+            System.out.print("dd");
 
-        Set<String> seta = new HashSet<String>();
-        Set<String> setb = new HashSet<String>();
-
-
-
+        }
 
 
     }
 
-    public List Tokenization(String documentpath) throws FileNotFoundException, IOException{
+
+
+    public List<Integer> pickRandoCoeffs(Integer NumberofHash){
+
+        Integer maxShingleID = (int)Math.pow(2,32) -1;
+        Integer nextPrime = maxShingleID + 16;
+        List<Integer> randList = new ArrayList<Integer>();
+        while(NumberofHash>0) {
+            Random generator = new Random();
+            Integer randIndex = generator.nextInt(maxShingleID);
+            while (randList.contains(randIndex)) {
+               // Random generator2 = new Random();
+                randIndex = generator.nextInt(maxShingleID);
+            }
+            randList.add(randIndex);
+            NumberofHash -= 1;
+        }
+        return randList;
+    }
+
+    public String RemoveSpaceAndJoint(String documentpath) throws FileNotFoundException, IOException{
         List NewDocument = new ArrayList();
         BufferedReader br = new BufferedReader(new FileReader(documentpath));
         while(true){
@@ -58,7 +115,9 @@ public class Evaluation {
             if (line==null){
                 break;
             }
-            String newline = line.replaceAll("\\W+"," ");
+            String newlines = line.replaceAll("\\p{Punct}","");
+            String newline = (newlines.replaceAll("\\s+","_"))+"_";
+            //System.out.println(newlines.charAt(0));
             if(newline.length()==0){
                 continue;
             }
@@ -67,8 +126,8 @@ public class Evaluation {
                 NewDocument.add(newline);
             }
         }
-
-        return NewDocument;
+        String NewDocumentString = StringUtils.join(NewDocument, " ");
+        return NewDocumentString;
     }
 
     public String GetDatasetPath(String dataset){
