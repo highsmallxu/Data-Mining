@@ -28,7 +28,7 @@ public class Evaluation {
 
 
         //Get dataset path
-        String DatasetPath = evaluation.GetDatasetPath("mini_newsgroups");
+        String DatasetPath = evaluation.GetDatasetPath("wiki20");
         //Get all documents path
         List<String> AllDocuments = evaluation.AllDocumentsPath(DatasetPath);
         //Initial document

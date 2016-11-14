@@ -24,5 +24,20 @@ public class minHash {
         }
         return HashMatrix;
     }
+
+    public List HashComparedMatrix(List<Integer> comparedshingles, Map<Integer,boolean[]> comparedmatrix, Integer InterSection){
+        for(int j=0;j<comparedshingles.size();j++) {
+            if (comparedmatrix.containsKey(comparedshingles.get(j))) {
+                comparedmatrix.put(comparedshingles.get(j), new boolean[]{true, true});
+                InterSection += 1;
+            } else if (!comparedmatrix.containsKey(comparedshingles.get(j))) {
+                comparedmatrix.put(comparedshingles.get(j), new boolean[]{false, true});
+            }
+        }
+        List e = new ArrayList();
+        e.add(comparedmatrix);
+        e.add(InterSection);
+        return e;
+    }
 }
 

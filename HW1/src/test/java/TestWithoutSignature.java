@@ -1,3 +1,7 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
+import javafx.util.Pair;
+
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -14,7 +18,7 @@ public class TestWithoutSignature {
         //Get Dataset Path
         //Get AllDocuments Paths
         Preprocessing PreprocessingClass = new Preprocessing();
-        List<String> AllDocumentsPath = PreprocessingClass.ReadingFilesMain("mini_newsgroups");
+        List<String> AllDocumentsPath = PreprocessingClass.ReadingFilesMain("test");
 
         //Get InitialDocument
         //--Get random document index
@@ -29,36 +33,29 @@ public class TestWithoutSignature {
         Integer k = 10;
         List<Integer> InitialDocumentShingles = minHashClass.k_shingle(InitialDocument,k);
         //--Create HashMap
-        private static Map<Integer,boolean[]> InitialDocumentMatrix;
-        InitialDocumentMatrix = minHashClass.HashSingleMatrix(InitialDocumentShingles);
-
+        Map<Integer,boolean[]> InitialDocumentMatrix;
 
         //Get ComparedDocuments
         Map<Integer,boolean[]> ComparedDocumentMatrix;
         Integer InterSection;
+        Double threshold = 0.6;
         for(int i=0;i<AllDocumentsPath.size();i++){
             InterSection = 0;
+            InitialDocumentMatrix = minHashClass.HashSingleMatrix(InitialDocumentShingles);
             ComparedDocumentMatrix = InitialDocumentMatrix;
             String ComparedDocumentPath = AllDocumentsPath.get(i);
             String ComparedDocument = PreprocessingClass.RemoveSpaceAndJoint(ComparedDocumentPath);
             List<Integer> ComparedDocumentShingles = minHashClass.k_shingle(ComparedDocument,k);
-            for(int j=0;j<ComparedDocumentShingles.size();j++){
-                if(ComparedDocumentMatrix.containsKey(ComparedDocumentShingles.get(j))){
-                    ComparedDocumentMatrix.put(ComparedDocumentShingles.get(j), new boolean[]{true, true});
-                    InterSection += 1;
-                }
-                else if(!ComparedDocumentMatrix.containsKey(ComparedDocumentShingles.get(j))){
-                    ComparedDocumentMatrix.put(ComparedDocumentShingles.get(j), new boolean[]{false,true});
-                }
+            List e = minHashClass.HashComparedMatrix(ComparedDocumentShingles,ComparedDocumentMatrix,InterSection);
+            ComparedDocumentMatrix = new ObjectMapper().convertValue(e.get(0),Map.class);
+            InterSection = Integer.valueOf((Integer) e.get(1));
+
+            Double fraction = (double)InterSection/ComparedDocumentMatrix.size();
+            //System.out.println(String.format("%.2f",fraction));
+            if(fraction>threshold){
+                File SimilarDocument = new File(AllDocumentsPath.get(i));
+                System.out.print(SimilarDocument.getName()+"\n");
             }
-            if(InterSection>1119){
-                System.out.print("warning");
-            }
-            System.out.print(InterSection+"\n");
-//            Double fraction = (double)InterSection/ComparedDocumentMatrix.size();
-//            System.out.println(String.format("%.2f",fraction));
         }
-
-
     }
 }
