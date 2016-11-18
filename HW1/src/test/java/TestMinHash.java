@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.*;
 
 /**
@@ -14,14 +15,14 @@ public class TestMinHash {
         Get full documents path
          */
         Preprocessing preprocessingClass = new Preprocessing();
-        List<String> alldocPath = preprocessingClass.ReadingFilesMain("test");
+        List<String> alldocPath = preprocessingClass.ReadingFilesMain("test2");
 
         /*
         Choose initial document;
         Remove unnecessary space;
          */
         Integer inidocInd  = new Random().nextInt(alldocPath.size());
-        String  inidocPath = alldocPath.get(inidocInd);
+        String  inidocPath = alldocPath.get(1);
         String  inidoc     = preprocessingClass.RemoveSpaceAndJoint(inidocPath);
 
         System.out.print("===Selected document is:" + inidocPath +"==="+"\n");
@@ -47,9 +48,13 @@ public class TestMinHash {
             int[] sig1 = minhashClass.hash(inidocShiSet,combineSet);
             int[] sig2 = minhashClass.hash(comdocShiSet,combineSet);
 
+            String ans = minhashClass.lsh(sig1,sig2,0.4);
+
+
             System.out.print("===Compated document is:"+comdocPath+"==="+"\n");
             System.out.println("Similarity with minhash is:"+minhashClass.sim(sig1,sig2));
-            System.out.println("Similarity without minhash is:"+JaccardSim(inidocShiSet,comdocShiSet)+"\n");
+            System.out.println("Similarity without minhash is:"+JaccardSim(inidocShiSet,comdocShiSet));
+            System.out.println(ans+"\n");
         }
     }
 
@@ -114,6 +119,44 @@ public class TestMinHash {
         return sig;
     }
 
+    public int[] complshhash(int[] sig, int stages, double buckets){
+        int[] hash = new int[stages];
+        int rows = sig.length/stages;
+
+        for(int i=0;i<sig.length;i++){
+            int stage = Math.min(i/rows,stages-1);
+            hash[stage] = (int)((hash[stage] + (long)sig[i]*Integer.MAX_VALUE)%buckets);
+        }
+
+        return hash;
+
+    }
+    public String lsh(int[] sig1,int[] sig2,Double thresh){
+        String ans = "not match";
+        int stages = 20; //stage=band
+        double buckets = 10;
+
+
+        int[] hash1 = complshhash(sig1,stages,buckets);
+        int[] hash2 = complshhash(sig2,stages,buckets);
+
+        double count = 0;
+        for(int i=0;i<stages;i++){
+            if(hash1[i]==hash2[i]){
+                count += 1;
+            }
+        }
+        double fraction = count/stages;
+
+        if(fraction > thresh){
+            ans = "candidate pair";
+        }
+        else{
+            ans = "not candidate pair";
+        }
+        return ans;
+    }
+
     public double sim(int[] sig1, int[] sig2){
         if(sig1.length!=sig2.length){
             throw new IllegalArgumentException();
@@ -126,5 +169,4 @@ public class TestMinHash {
         }
         return sim/sig1.length;
     }
-
 }
