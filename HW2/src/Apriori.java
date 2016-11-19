@@ -14,8 +14,14 @@ import java.util.TreeMap;
 public class Apriori {
 
     public static void main(String[] args) throws Exception {
+
         int min_sup = 2;
-        double min_conf = 0.6;
+        double min_conf = 0.7;
+        if (args.length > 0) {
+            min_sup = Integer.parseInt(args[0]);
+            min_conf = Double.parseDouble(args[1]);
+        }
+
         String data = "sdata.dat";
         String output = "result.txt";
 
@@ -26,19 +32,14 @@ public class Apriori {
         //find frequent item sets
         Map<Integer, Set<ItemSet>> rst = findFrequentItemSets(trans, min_sup,output);
 
+        // generate association rule
+        Rule genRule = new Rule();
+        Rule.genRule(rst, min_conf,output);
 
-        Map<ItemSet, ItemSet> directMap = new HashMap<ItemSet, ItemSet>();
-        for (Entry<Integer, Set<ItemSet>> entry : rst.entrySet()) {
-            for (ItemSet set : entry.getValue())
-                directMap.put(set, set);
-        }
-        //generate association rule
-        genRule(rst,directMap,min_conf,output);
     }
 
     //find frequent item set
-    static Map<Integer, Set<ItemSet>> findFrequentItemSets(
-            Iterable<Set<String>> transIterable, int min_sup, String output) {
+    static Map<Integer, Set<ItemSet>> findFrequentItemSets(Iterable<Set<String>> transIterable, int min_sup, String output) {
         Map<Integer, Set<ItemSet>> ret = new TreeMap<Integer, Set<ItemSet>>();
 
         //find 1 item frequent set
@@ -75,22 +76,19 @@ public class Apriori {
             preItemSetSize = curItemSetSize;
             preItemSets = curItemSets;
         }
+        //print result
         try {
             PrintWriter writer =  new PrintWriter(output);
-            writer.write("Frequent Item Sets:");
-            //System.out.println("Frequent Item Sets:");
+            writer.println("Frequent Item Sets:");//System.out.println("Frequent Item Sets:");
             for (Entry<Integer, Set<ItemSet>> entry : ret.entrySet()) {
                 Integer itemSetSize = entry.getKey();
-                writer.printf("Frequent %d Item Sets:\n", itemSetSize);
-                //System.out.printf("Frequent %d Item Sets:\n", itemSetSize);
+                writer.printf("Frequent %d Item Sets:\n", itemSetSize);//System.out.printf("Frequent %d Item Sets:\n", itemSetSize);
 
                 for (ItemSet set : entry.getValue())
-                    writer.printf("%s, %d\n", set, set.frequence);
-                    //System.out.printf("%s, %d\n", set, set.frequence);
+                    writer.printf("%s, %d\n", set, set.frequence);//System.out.printf("%s, %d\n", set, set.frequence);
             }
             writer.close();
-        }
-        catch (IOException e){
+        }catch (IOException e){
             e.printStackTrace();
         }
         return ret;
@@ -128,17 +126,17 @@ public class Apriori {
     static List<ItemSet> aprioriGenCandidates(Set<ItemSet> preItemSets) {
         List<ItemSet> ret = new LinkedList<ItemSet>();
 
-        // 尝试将所有频繁L-1项集两两连接然后作剪枝处理以获得候选L项集
+        // combine any two of L-1 frequent set to get L candidate set
         for (ItemSet set1 : preItemSets) {
             for (ItemSet set2 : preItemSets) {
                 if (set1 != set2 && set1.canMakeJoin(set2)) {
 
-                    // 连接
+                    // join
                     ItemSet union = new ItemSet();
                     union.addAll(set1);
                     union.add(set2.last());
 
-                    // 剪枝
+                    // prune
                     boolean missSubSet = false;
                     List<ItemSet> subItemSets = union.listDirectSubItemSets();
                     for (ItemSet itemSet : subItemSets) {
@@ -155,33 +153,4 @@ public class Apriori {
         return ret;
     }
 
-    //generate rule
-    static void genRule(Map<Integer, Set<ItemSet>> rst,Map<ItemSet, ItemSet> directMap,double min_conf,String output){
-        try {
-            PrintWriter writer =  new PrintWriter(new FileWriter(output, true));
-            writer.println("Association Rules:");
-            //System.out.println("Association Rules:");
-            for (Entry<Integer, Set<ItemSet>> entry : rst.entrySet()) {
-                for (ItemSet set : entry.getValue()) {
-                    double cnt1 = directMap.get(set).frequence;
-                    List<ItemSet> subSets = set.listNotEmptySubItemSets();
-                    for (ItemSet subSet : subSets) {
-                        int cnt2 = directMap.get(subSet).frequence;
-                        double conf = cnt1 / cnt2;
-                        if (cnt1 / cnt2 >= min_conf) {
-                            ItemSet remainSet = new ItemSet();
-                            remainSet.addAll(set);
-                            remainSet.removeAll(subSet);
-                            writer.printf("%s => %s, %.2f\n", subSet,remainSet, conf);
-                            //System.out.printf("%s => %s, %.2f\n", subSet, remainSet, conf);
-                        }
-                    }
-                }
-            }
-            writer.close();
-        }
-        catch (IOException e){
-            e.printStackTrace();
-        }
-    }
 }

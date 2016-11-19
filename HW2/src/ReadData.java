@@ -14,8 +14,7 @@ public class ReadData {
         List<Set<String>> trans = new LinkedList<Set<String>>();
         List<String> list = new ArrayList<>();
         try (Stream<String> stream = Files.lines(Paths.get(data))) {
-            list = stream
-                    .collect(Collectors.toList());
+            list = stream.collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -1,14 +1,12 @@
+import java.util.*;
 /**
  * Created by wangyu on 2016/11/14.
  */
 
-import java.util.*;
 
 class ItemSet extends TreeSet<String> {
 
-    private static final long serialVersionUID = 23883315835136949L;
-
-    int frequence; // 项集出现的频次
+    int frequence;
 
     public ItemSet() {
         this(new String[0]);
