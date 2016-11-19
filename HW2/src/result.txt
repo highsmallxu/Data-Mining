@@ -1,0 +1,14 @@
+Frequent Item Sets:
+Frequent 1 Item Sets:
+[1], 6
+[2], 7
+[3], 6
+Frequent 2 Item Sets:
+[1, 2], 4
+[1, 3], 4
+[2, 3], 4
+Association Rules:
+[1] -> [2], 0.67
+[1] -> [3], 0.67
+[3] -> [1], 0.67
+[3] -> [2], 0.67

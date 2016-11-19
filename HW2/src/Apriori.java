@@ -17,12 +17,14 @@ public class Apriori {
 
         int min_sup = 2;
         double min_conf = 0.7;
+        String data = "sdata.dat";
         if (args.length > 0) {
-            min_sup = Integer.parseInt(args[0]);
-            min_conf = Double.parseDouble(args[1]);
+            data = args[0];
+            min_sup = Integer.parseInt(args[1]);
+            min_conf = Double.parseDouble(args[2]);
         }
 
-        String data = "sdata.dat";
+
         String output = "result.txt";
 
         // read data file and init transactions
