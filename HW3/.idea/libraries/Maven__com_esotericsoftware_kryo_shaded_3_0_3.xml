@@ -1,0 +1,10 @@
+<component name="libraryTable">
+  <library name="Maven: com.esotericsoftware:kryo-shaded:3.0.3">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/esotericsoftware/kryo-shaded/3.0.3/kryo-shaded-3.0.3.jar!/" />
+    </CLASSES>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/esotericsoftware/kryo-shaded/3.0.3/kryo-shaded-3.0.3-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
